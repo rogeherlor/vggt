@@ -3,6 +3,10 @@
 #
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+import os, sys
+path = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(path)
+sys.path.append(os.path.join(path, "../../vggt"))
 
 import argparse
 from hydra import initialize, compose
