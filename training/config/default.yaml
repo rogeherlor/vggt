@@ -45,8 +45,8 @@ data:
       dataset_configs:
         - _target_: data.datasets.co3d.Co3dDataset
           split: test
-          CO3D_DIR: /YOUR/PATH/TO/CO3D
-          CO3D_ANNOTATION_DIR: /YOUR/PATH/TO/CO3D_ANNOTATION
+          CO3D_DIR: /workspace/data/co3d
+          CO3D_ANNOTATION_DIR: /workspace/data/co3d_anno
 
 
 logging:
@@ -86,7 +86,7 @@ logging:
 checkpoint:
   save_dir: logs/${exp_name}/ckpts
   save_freq: 5
-  resume_checkpoint_path: /YOUR/PATH/TO/CKPT
+  resume_checkpoint_path: /workspace/model_zoo/vggt/vggt_1B_commercial.pt
   strict: False
 
 
