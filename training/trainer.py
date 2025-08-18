@@ -15,7 +15,7 @@ os.environ["MKL_THREADING_LAYER"] = "GNU"
 # Provides full Hydra stack traces on error for easier debugging.
 os.environ["HYDRA_FULL_ERROR"] = "1"
 # Enables asynchronous error handling for NCCL, which can prevent hangs.
-os.environ["NCCL_ASYNC_ERROR_HANDLING"] = "1"
+os.environ["TORCH_NCCL_ASYNC_ERROR_HANDLING"] = "1"
 
 
 import contextlib

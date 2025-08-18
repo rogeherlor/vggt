@@ -30,8 +30,8 @@ data:
       dataset_configs:
         - _target_: data.datasets.co3d.Co3dDataset
           split: train
-          CO3D_DIR: /workspace/data/co3d
-          CO3D_ANNOTATION_DIR: /workspace/data/co3d_anno
+          CO3D_DIR: /data3/rogelio/co3d/dataset
+          CO3D_ANNOTATION_DIR: /data3/rogelio/co3d/co3d_anno
   val:
     _target_: data.dynamic_dataloader.DynamicTorchDataset
     num_workers: ${num_workers}
@@ -45,8 +45,8 @@ data:
       dataset_configs:
         - _target_: data.datasets.co3d.Co3dDataset
           split: test
-          CO3D_DIR: /workspace/data/co3d
-          CO3D_ANNOTATION_DIR: /workspace/data/co3d_anno
+          CO3D_DIR: /data3/rogelio/co3d/dataset
+          CO3D_ANNOTATION_DIR: /data3/rogelio/co3d/co3d_anno
 
 
 logging:
@@ -86,7 +86,7 @@ logging:
 checkpoint:
   save_dir: logs/${exp_name}/ckpts
   save_freq: 5
-  resume_checkpoint_path: /workspace/model_zoo/vggt/vggt_1B_commercial.pt
+  resume_checkpoint_path: /home/rogelio/quantize/model_zoo/vggt/vggt_1B_commercial.pt
   strict: False
 
 

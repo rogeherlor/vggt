@@ -22,7 +22,7 @@ data:
       rescale: True
       rescale_aug: True
       landscape_check: False
-      debug: False
+      debug: True # False
       get_nearby: True
       load_depth: True
       img_nums: [2, 24]
@@ -64,7 +64,7 @@ data:
       rescale: True
       rescale_aug: False
       landscape_check: False
-      debug: False
+      debug: True # False
       get_nearby: True
       load_depth: True
       img_nums: [2, 12]
