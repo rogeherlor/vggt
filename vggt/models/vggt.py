@@ -13,6 +13,7 @@ from vggt.heads.camera_head import CameraHead
 from vggt.heads.dpt_head import DPTHead
 from vggt.heads.track_head import TrackHead
 
+from torch.utils.checkpoint import checkpoint
 
 class VGGT(nn.Module, PyTorchModelHubMixin):
     def __init__(self, img_size=518, patch_size=14, embed_dim=1024,
@@ -58,7 +59,11 @@ class VGGT(nn.Module, PyTorchModelHubMixin):
         if query_points is not None and len(query_points.shape) == 2:
             query_points = query_points.unsqueeze(0)
 
-        aggregated_tokens_list, patch_start_idx = self.aggregator(images)
+        ## aggregated_tokens_list, patch_start_idx = self.aggregator(images) # A6000 (48 GB)
+        if self.training:
+            aggregated_tokens_list, patch_start_idx = checkpoint(self.aggregator, images, use_reentrant=False)
+        else:
+            aggregated_tokens_list, patch_start_idx = self.aggregator(images)
 
         predictions = {}
 
