@@ -374,13 +374,23 @@ class Trainer:
         else:
             raise ValueError(f"Invalid mode: {self.mode}")
 
-    def run_train(self):
+    def run_train(self, **kwargs):
         """Runs the main training loop over all epochs."""
+        s_optimizer = kwargs.get("s_optimizer", None)
+        s_scheduler = kwargs.get("s_scheduler", None)
+
         while self.epoch < self.max_epochs:
             set_seeds(self.seed_value + self.epoch * 100, self.max_epochs, self.distributed_rank)
+
+            s_optimizer.zero_grad()
             
             dataloader = self.train_dataset.get_loader(epoch=int(self.epoch + self.distributed_rank))
             self.train_epoch(dataloader)
+
+            if s_optimizer is not None and s_scheduler is not None:
+                print("Hello world")
+                s_optimizer.step()
+                s_scheduler.step()
             
             # Save checkpoint after each training epoch
             self.save_checkpoint(self.epoch)

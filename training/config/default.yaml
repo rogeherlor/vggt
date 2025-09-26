@@ -6,10 +6,10 @@ img_size: 518
 num_workers: 8
 seed_value: 42
 # If you want to accumulate N steps, the batch size B should be a multiple of N.
-accum_steps: 1 # 2   # We did not use gradient accumulation in our training, while if you suffer from OOM, you can try to use it.
+accum_steps: 2 # 2   # We did not use gradient accumulation in our training, while if you suffer from OOM, you can try to use it.
 patch_size: 14
 val_epoch_freq: 5
-max_img_per_gpu: 24 # 48
+max_img_per_gpu: 48 # 48
 
 limit_train_batches: 800
 limit_val_batches: 400
@@ -31,8 +31,8 @@ data:
       dataset_configs:
         - _target_: data.datasets.co3d.Co3dDataset
           split: train
-          CO3D_DIR: /data3/rogelio/co3d/dataset
-          CO3D_ANNOTATION_DIR: /data3/rogelio/co3d/co3d_anno
+          CO3D_DIR: data3/rogelio/co3d/dataset
+          CO3D_ANNOTATION_DIR: data3/rogelio/co3d/co3d_anno
   val:
     _target_: data.dynamic_dataloader.DynamicTorchDataset
     num_workers: ${num_workers}
@@ -46,12 +46,12 @@ data:
       dataset_configs:
         - _target_: data.datasets.co3d.Co3dDataset
           split: test
-          CO3D_DIR: /data3/rogelio/co3d/dataset
-          CO3D_ANNOTATION_DIR: /data3/rogelio/co3d/co3d_anno
+          CO3D_DIR: data3/rogelio/co3d/dataset
+          CO3D_ANNOTATION_DIR: data3/rogelio/co3d/co3d_anno
 
 
 logging:
-  log_dir: logs
+  log_dir: data3/rogelio/logs
   log_freq: 1
   log_level_primary: DEBUG
   log_level_secondary: WARNING
@@ -84,7 +84,7 @@ logging:
 
 
 checkpoint:
-  save_dir: logs/${exp_name}/ckpts
+  save_dir: data3/rogelio/logs/${exp_name}/ckpts
   save_freq: 5
   resume_checkpoint_path: /home/rogelio/quantize/model_zoo/vggt/vggt_1B_commercial.pt
   strict: False
