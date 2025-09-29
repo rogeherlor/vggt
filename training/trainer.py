@@ -157,9 +157,10 @@ class Trainer:
         if self.checkpoint_conf.resume_checkpoint_path is not None:
             self._load_resuming_checkpoint(self.checkpoint_conf.resume_checkpoint_path)
         else:   
-            ckpt_path = get_resume_checkpoint(self.checkpoint_conf.save_dir)
-            if ckpt_path is not None:
-                self._load_resuming_checkpoint(ckpt_path)
+            # ckpt_path = get_resume_checkpoint(self.checkpoint_conf.save_dir)
+            # if ckpt_path is not None:
+            #     self._load_resuming_checkpoint(ckpt_path)
+            pass
 
         # Wrap the model with DDP
         self._setup_ddp_distributed_training(distributed, device)
@@ -213,7 +214,18 @@ class Trainer:
         # Load optimizer state if available and in training mode
         if "optimizer" in checkpoint:
             logging.info(f"Loading optimizer state dict (rank {self.rank})")
-            self.optims.optimizer.load_state_dict(checkpoint["optimizer"])
+            if isinstance(self.optims, list):
+                # Handle case where optims is a list of optimizers
+                if len(self.optims) == 1:
+                    self.optims[0].optimizer.load_state_dict(checkpoint["optimizer"])
+                else:
+                    # Multiple optimizers case
+                    for i, optim in enumerate(self.optims):
+                        if i < len(checkpoint["optimizer"]):
+                            optim.optimizer.load_state_dict(checkpoint["optimizer"][i])
+            else:
+                # Single optimizer case
+                self.optims.optimizer.load_state_dict(checkpoint["optimizer"])
 
         # Load training progress
         if "epoch" in checkpoint:
@@ -334,6 +346,11 @@ class Trainer:
             checkpoint_content["optimizer"] = checkpoint_content["optimizer"][0]
         if self.optim_conf.amp.enabled:
             checkpoint_content["scaler"] = self.scaler.state_dict()
+        
+        if hasattr(self, 's_optimizer') and self.s_optimizer is not None:
+            checkpoint_content["s_optimizer"] = self.s_optimizer.state_dict()
+        if hasattr(self, 's_scheduler') and self.s_scheduler is not None:
+            checkpoint_content["s_scheduler"] = self.s_scheduler.state_dict()
 
         # Save the checkpoint for DDP only
         saver = DDPCheckpointSaver(
@@ -374,23 +391,21 @@ class Trainer:
         else:
             raise ValueError(f"Invalid mode: {self.mode}")
 
-    def run_train(self, **kwargs):
+    def run_train(self):
         """Runs the main training loop over all epochs."""
-        s_optimizer = kwargs.get("s_optimizer", None)
-        s_scheduler = kwargs.get("s_scheduler", None)
-
         while self.epoch < self.max_epochs:
             set_seeds(self.seed_value + self.epoch * 100, self.max_epochs, self.distributed_rank)
 
-            s_optimizer.zero_grad()
+            if hasattr(self, 's_optimizer') and self.s_optimizer is not None:
+                self.s_optimizer.zero_grad()
             
             dataloader = self.train_dataset.get_loader(epoch=int(self.epoch + self.distributed_rank))
             self.train_epoch(dataloader)
 
-            if s_optimizer is not None and s_scheduler is not None:
-                print("Hello world")
-                s_optimizer.step()
-                s_scheduler.step()
+            if hasattr(self, 's_optimizer') and hasattr(self, 's_scheduler') and \
+               self.s_optimizer is not None and self.s_scheduler is not None:
+                self.s_optimizer.step()
+                self.s_scheduler.step()
             
             # Save checkpoint after each training epoch
             self.save_checkpoint(self.epoch)
