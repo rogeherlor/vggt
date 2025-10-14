@@ -54,7 +54,7 @@ class GradientClipper:
         for config in self.configs:
             current_config_params = []
             for name, param in model.named_parameters():
-                if param.requires_grad:
+                if param.requires_grad and param not in all_clipped_params:
                     for module_name in config['module_names']:
                         if module_name in name:
                             current_config_params.append(param)

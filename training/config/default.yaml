@@ -86,7 +86,7 @@ logging:
 checkpoint:
   save_dir: data3/rogelio/logs/${exp_name}/ckpts
   save_freq: 5
-  resume_checkpoint_path: /home/rogelio/quantize/model_zoo/vggt/vggt_1B_commercial.pt
+  resume_checkpoint_path: data3/rogelio/model_zoo/vggt/vggt_1B_commercial.pt
   strict: False
 
 
@@ -123,11 +123,17 @@ optim:
       # - "*aggregator*"  # example, freeze the aggregator
 
   amp:
-    enabled: True
+    enabled: False
     amp_dtype: bfloat16
   gradient_clip:
     _target_: train_utils.gradient_clip.GradientClipper
     configs:
+      - module_name: ["w_scale"]  # Order dependent now - check this FIRST. Needs to call setup_clipping after replace!
+        max_norm: 0.1
+        norm_type: 2
+      - module_name: ["x_scale"]
+        max_norm: 0.1
+        norm_type: 2
       - module_name: ["aggregator"]
         max_norm: 1.0   # feel free to reduce this if you see instabilities
         norm_type: 2
@@ -158,7 +164,7 @@ optim:
 
 
 
-max_epochs: 20
+max_epochs: 100 # 20
 
 model:
   _target_: vggt.models.vggt.VGGT
