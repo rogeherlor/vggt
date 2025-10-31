@@ -3,7 +3,7 @@ defaults:
 
 exp_name: exp001
 img_size: 518
-num_workers: 8
+num_workers: 16 # 8
 seed_value: 42
 # If you want to accumulate N steps, the batch size B should be a multiple of N.
 accum_steps: 1 # 2   # We did not use gradient accumulation in our training, while if you suffer from OOM, you can try to use it.
@@ -51,11 +51,11 @@ data:
 
 
 logging:
-  log_dir: data3/rogelio/logs
+  log_dir: data3/rogelio/logs_clip_1_10_lr
   log_freq: 1
   log_level_primary: DEBUG
   log_level_secondary: WARNING
-  all_ranks: False
+  all_ranks: True
   tensorboard_writer:
     _target_: train_utils.tb_writer.TensorBoardLogger
     path: ${logging.log_dir}/tensorboard
@@ -84,7 +84,7 @@ logging:
 
 
 checkpoint:
-  save_dir: data3/rogelio/logs/${exp_name}/ckpts
+  save_dir: ${logging.log_dir}/${exp_name}/ckpts
   save_freq: 5
   resume_checkpoint_path: data3/rogelio/model_zoo/vggt/vggt_1B_commercial.pt
   strict: False
@@ -119,20 +119,19 @@ optim:
     weight_decay: 0.05
 
   frozen_module_names:
-      # When freezing or unfreezing careful memory checkpoint stops working. A6000 (48 GB)
       # - "*aggregator*"  # example, freeze the aggregator
 
   amp:
-    enabled: False
+    enabled: True
     amp_dtype: bfloat16
   gradient_clip:
     _target_: train_utils.gradient_clip.GradientClipper
     configs:
       - module_name: ["w_scale"]  # Order dependent now - check this FIRST. Needs to call setup_clipping after replace!
-        max_norm: 0.1
+        max_norm: 10.0
         norm_type: 2
       - module_name: ["x_scale"]
-        max_norm: 0.1
+        max_norm: 10.0
         norm_type: 2
       - module_name: ["aggregator"]
         max_norm: 1.0   # feel free to reduce this if you see instabilities
